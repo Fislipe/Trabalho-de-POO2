@@ -58,11 +58,16 @@
     <div class="caixa-login">
         <h2>Acesso ao Sistema</h2>
         <form action="/autenticar" method="POST">
-            <input type="text" name="usuario" placeholder="Digite seu Usuário ou E-mail" required>
+            <input type="text" name="usuario" placeholder="Digite seu E-mail" required>
             <input type="password" name="senha" placeholder="Senha" required>
             <button type="submit">Entrar</button>
         </form>
-        <p class="dica">Testes rápidos: imobiliaria | inquilino | proprietario | prestador</p>
+        {% if erro %}
+            <p style="color: red; font-weight: bold; text-align: center;">{{ erro }}</p>
+        {% endif %}
+        <p class="dica">Testes rápidos: inquilino | proprietario | prestador</p>
+
+        <p class="dica">Acesso imobiliaria: imobiliaria@gmail.com (Senha: 123)</p>
     </div>
 </body>
 </html>
