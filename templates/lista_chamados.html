@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Todos os Chamados</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; padding: 40px; display: flex; justify-content: center; }
+        .container { background-color: #2b2b2b; padding: 30px; border-radius: 10px; width: 600px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); }
+        .card-chamado { background-color: #3b3b3b; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 5px solid #1f538d; }
+        .card-chamado h3 { margin: 0 0 10px 0; font-size: 18px; }
+        .card-chamado p { margin: 5px 0; font-size: 14px; color: #cccccc; }
+        .btn-acao { background-color: #1f538d; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; float: right; margin-top: -30px; font-weight: bold; }
+        .btn-acao:hover { background-color: #143a63; }
+        .btn-voltar { background-color: #555; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 16px; }
+        .btn-voltar:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Monitoramento Geral da Agência</h2>
+        <p style="color: gray; font-size: 14px;">Visão completa de todos os problemas relatados.</p>
+        
+        <div class="card-chamado">
+            <h3>ID #1 - Infiltração na Parede da Sala</h3>
+            <p><strong>Categoria:</strong> Estrutural</p>
+            <p><strong>Status:</strong> Aguardando Proprietário</p>
+            <button class="btn-acao">Editar</button>
+        </div>
+
+        <div class="card-chamado">
+            <h3>ID #2 - Maçaneta Quebrada</h3>
+            <p><strong>Categoria:</strong> Uso e Manutenção</p>
+            <p><strong>Status:</strong> Em Execução</p>
+            <button class="btn-acao">Editar</button>
+        </div>
+
+        <form action="/autenticar" method="POST">
+            <input type="hidden" name="usuario" value="imobiliaria">
+            <button type="submit" class="btn-voltar">Voltar ao Painel</button>
+        </form>
+    </div>
+</body>
+</html>

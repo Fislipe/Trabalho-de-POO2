@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastro de Usuários</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; padding: 40px; display: flex; justify-content: center; }
+        .caixa-cadastro { background-color: #2b2b2b; padding: 30px; border-radius: 10px; width: 400px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; box-sizing: border-box; font-size: 14px; }
+        button { width: 100%; padding: 12px; background-color: #2e8b57; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; }
+        button:hover { background-color: #1f633d; }
+        .btn-voltar { background-color: #555; margin-top: 10px; }
+        .btn-voltar:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="caixa-cadastro">
+        <h2>Cadastrar Novo Acesso</h2>
+        <p style="color: gray; font-size: 14px;">Preencha os dados do novo usuário abaixo.</p>
+        
+        <form action="/salvar_cadastro" method="POST">
+            <input type="text" name="nome" placeholder="Nome Completo" required>
+            <input type="text" name="novo_usuario" placeholder="Usuário ou E-mail para Login" required>
+            <input type="password" name="senha" placeholder="Senha Provisória" required>
+            
+            <label for="perfil" style="font-size: 14px; margin-top: 10px; display: block;">Qual o perfil desta pessoa?</label>
+            <select name="perfil" id="perfil">
+                <option value="Inquilino">Inquilino</option>
+                <option value="Proprietario">Proprietário</option>
+                <option value="Prestador de Serviço">Prestador de Serviço</option>
+            </select>
+            
+            <button type="submit">Salvar no Sistema</button>
+        </form>
+
+        <form action="/autenticar" method="POST">
+            <input type="hidden" name="usuario" value="imobiliaria">
+            <button type="submit" class="btn-voltar">Cancelar</button>
+        </form>
+    </div>
+</body>
+</html>

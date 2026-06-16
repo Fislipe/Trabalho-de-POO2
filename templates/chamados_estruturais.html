@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Aprovação de Reparos</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; padding: 40px; display: flex; justify-content: center; }
+        .container { background-color: #2b2b2b; padding: 30px; border-radius: 10px; width: 600px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); border-top: 5px solid #d39e00; }
+        .card-chamado { background-color: #4a3b1c; padding: 15px; margin-bottom: 15px; border-radius: 8px; border-left: 5px solid #d39e00; }
+        .card-chamado h3 { margin: 0 0 10px 0; font-size: 18px; }
+        .card-chamado p { margin: 5px 0; font-size: 14px; color: #e0e0e0; }
+        .btn-aprovar { background-color: #2e8b57; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; float: right; margin-top: -30px; font-weight: bold; }
+        .btn-aprovar:hover { background-color: #1f633d; }
+        .btn-voltar { background-color: #555; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 16px; }
+        .btn-voltar:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Problemas Estruturais Pendentes</h2>
+        <p style="color: gray; font-size: 14px;">Analise e aprove as solicitações de reparo do seu imóvel.</p>
+        
+        <div class="card-chamado">
+            <h3>ID #1 - Infiltração na Parede da Sala</h3>
+            <p><strong>Custo Estimado:</strong> R$ 1.200,00</p>
+            <p><strong>Status:</strong> Aguardando sua aprovação</p>
+            <button class="btn-aprovar">Aprovar Orçamento</button>
+        </div>
+
+        <form action="/autenticar" method="POST">
+            <input type="hidden" name="usuario" value="proprietario">
+            <button type="submit" class="btn-voltar">Voltar ao Painel</button>
+        </form>
+    </div>
+</body>
+</html>

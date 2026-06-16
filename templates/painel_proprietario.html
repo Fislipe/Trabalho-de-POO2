@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel do Proprietário</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; padding: 40px; }
+        .container { background-color: #2b2b2b; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); border-top: 5px solid #d39e00; }
+        button { width: 100%; padding: 15px; margin: 10px 0; background-color: #1f538d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #143a63; }
+        .btn-alerta { background-color: #d39e00; color: black; }
+        .btn-alerta:hover { background-color: #a67c00; }
+        .form-sair { text-align: right; margin-top: 20px; }
+        .sair { background-color: #8d1f1f; width: auto; padding: 10px 20px; margin: 0; display: inline-block; color: white; }
+        .sair:hover { background-color: #631414; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Área do Proprietário</h2>
+        <p>Aqui você aprova orçamentos e gerencia problemas estruturais dos seus imóveis.</p>
+        
+        <form action="/chamados_estruturais" method="GET">
+            <button type="submit" class="btn-alerta">Ver Problemas Estruturais Pendentes</button>
+        </form>
+        
+        <form action="/" method="GET" class="form-sair">
+            <button type="submit" class="sair">Sair</button>
+        </form>
+    </div>
+</body>
+</html>

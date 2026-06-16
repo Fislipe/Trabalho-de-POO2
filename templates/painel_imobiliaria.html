@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Painel da Imobiliária</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; padding: 40px; }
+        .container { background-color: #2b2b2b; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); }
+        button { width: 100%; padding: 15px; margin: 10px 0; background-color: #1f538d; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; font-weight: bold; }
+        button:hover { background-color: #143a63; }
+        
+        /* Correção do botão sair: alinhamento no form e display inline no botão */
+        .form-sair { text-align: right; margin-top: 20px; }
+        .sair { background-color: #8d1f1f; width: auto; padding: 10px 20px; margin: 0; display: inline-block; }
+        .sair:hover { background-color: #631414; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Painel Administrativo - Imobiliária</h2>
+        <p>Bem-vindo ao sistema de gestão de ocorrências.</p>
+        
+        <form action="/cadastro" method="GET">
+            <button type="submit">👥 Cadastrar Novo Usuário</button>
+        </form>
+        
+        <form action="/chamados" method="GET">
+            <button type="submit">📋 Ver Todos os Chamados da Agência</button>
+        </form>
+        
+        <form action="/" method="GET" class="form-sair">
+            <button type="submit" class="sair">Sair</button>
+        </form>
+    </div>
+</body>
+</html>

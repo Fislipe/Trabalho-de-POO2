@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Abrir Chamado</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #1a1a1a; color: white; padding: 40px; display: flex; justify-content: center; }
+        .caixa-form { background-color: #2b2b2b; padding: 30px; border-radius: 10px; width: 450px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.5); }
+        input, select, textarea { width: 100%; padding: 12px; margin: 10px 0; border: none; border-radius: 5px; box-sizing: border-box; font-size: 14px; font-family: Arial, sans-serif; }
+        button { width: 100%; padding: 12px; background-color: #2e8b57; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; font-size: 16px; margin-top: 15px; }
+        button:hover { background-color: #1f633d; }
+        .btn-voltar { background-color: #555; margin-top: 10px; }
+        .btn-voltar:hover { background-color: #333; }
+    </style>
+</head>
+<body>
+    <div class="caixa-form">
+        <h2>Relatar Problema no Imóvel</h2>
+        <p style="color: gray; font-size: 14px;">Descreva o problema para que possamos acionar o responsável.</p>
+        
+        <form action="/salvar_chamado" method="POST">
+            <input type="text" name="titulo" placeholder="Título (ex: Vazamento na pia)" required>
+            
+            <label for="categoria" style="font-size: 14px; margin-top: 10px; display: block;">Categoria (Define quem resolve!):</label>
+            <select name="categoria" id="categoria">
+                <option value="Estrutural">Estrutural (Resp: Proprietário)</option>
+                <option value="Uso e Manutenção">Uso e Manutenção (Resp: Imobiliária)</option>
+            </select>
+            
+            <textarea name="descricao" rows="4" placeholder="Descreva os detalhes aqui..." required></textarea>
+            
+            <button type="submit">Registrar Chamado</button>
+        </form>
+
+        <form action="/autenticar" method="POST">
+            <input type="hidden" name="usuario" value="inquilino">
+            <button type="submit" class="btn-voltar">Cancelar</button>
+        </form>
+    </div>
+</body>
+</html>
