@@ -1,139 +1,103 @@
-from flask import Flask, render_template, request
-from supabase import create_client, Client
-from Classes.usuarios import UsuarioFactory
+from flask import Flask, render_template, request, redirect, url_for, session
+from Classes.facade import SistemaImobiliarioFacade
 
 app = Flask(__name__)
+app.secret_key = '7b91e4f2c8a0d3b6f5e8a1c4b9d7e0f2'
 
-SUPABASE_URL = "https://aawotiynbpxgykxzlyux.supabase.co"
-SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhd290aXluYnB4Z3lreHpseXV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDAzMzAsImV4cCI6MjA5NzIxNjMzMH0.ntk2VmlVvUHphWyZCMXx1_Ng5jaVPCuy0yUQmvwpshY"
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+#listas locais para testar antes de ligar a base de dados definitiva
+usuarios_banco_local = {}
+chamados_banco_local = {}
 
 @app.route('/')
-def login():
-    return render_template('login.html')
+def index():
+    return redirect(url_for('login'))
 
-
-@app.route('/autenticar', methods=['POST'])
-def autenticar():
-    usuario_digitado = request.form.get('usuario').strip()
-    senha_digitada = request.form.get('senha')
-    
-    try:
-        # busca no supa se tem um usuario com o email digitado, e pega os dados dele
-        resposta = supabase.table("usuarios").select("*").eq("email", usuario_digitado).execute()
-        usuarios_encontrados = resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+@app.route('/cadastro', methods=['GET', 'POST'])
+def cadastro():
+    if request.method == 'POST':
+        perfil = request.form.get('perfil')
+        nome = request.form.get('nome')
+        documento = request.form.get('documento')
+        email = request.form.get('email')
+        senha = request.form.get('senha')
         
-        if usuarios_encontrados:
-            dados_db = usuarios_encontrados[0]
+        try:
+            #chama a fachada para criar o tipo de utilizador correto usando a Factory
+            novo_usuario = SistemaImobiliarioFacade.registrar_novo_usuario(perfil, nome, documento, email, senha)
+            usuarios_banco_local[email] = novo_usuario
+            return redirect(url_for('login'))
+        except ValueError as e:
+            return f"Erro ao registar: {str(e)}"
             
-            # usa a fabrica para montar o objeto com os dados reais
-            usuario_objeto = UsuarioFactory.criar_usuario(
-                perfil=dados_db['perfil'],
-                nome=dados_db['nome'],
-                documento=dados_db['email'], # Email provisório como documento
-                email=dados_db['email'],
-                senha=dados_db['senha']
-            )
-            
-            # proprio objeto confirma a senha e diz qual é o painel dele
-            if usuario_objeto.validar_senha(senha_digitada):
-                perfil = usuario_objeto.obter_perfil()
-                
-                if perfil == "imobiliaria" or perfil == "Imobiliaria":
-                    return render_template('painel_imobiliaria.html')
-                elif perfil == "Inquilino":
-                    return render_template('painel_inquilino.html')
-                elif perfil == "Proprietario":
-                    return render_template('painel_proprietario.html')
-                elif perfil == "Prestador de Serviço":
-                    return render_template('painel_prestador.html')
-        
-        
-        return render_template('login.html', erro="Usuário ou senha incorretos!")
-        
-    except Exception as e:
-        # se der problema no banco de dados, também avisa na mesma tela
-        return render_template('login.html', erro="Erro de conexão com o banco de dados.")
-
-
-@app.route('/cadastro')
-def tela_cadastro():
     return render_template('cadastro.html')
 
-
-@app.route('/salvar_cadastro', methods=['POST'])
-def salvar_cadastro():
-    nome = request.form.get('nome')
-    novo_usuario = request.form.get('novo_usuario').strip()
-    senha = request.form.get('senha')
-    perfil = request.form.get('perfil')
-    
-    try:
-        usuario_obj = UsuarioFactory.criar_usuario(
-            perfil=perfil,
-            nome=nome,
-            documento=novo_usuario,
-            email=novo_usuario,
-            senha=senha
-        )
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        senha = request.form.get('senha')
         
-        # fazer esse metodo de salvar dentro da classe para manter a lógica de persistência encapsulada
-        usuario_obj.salvar_no_banco(supabase)
+        usuario = usuarios_banco_local.get(email)
+        if usuario and usuario.validar_senha(senha):
+            session['usuario_email'] = email
+            session['usuario_perfil'] = usuario.obter_perfil()
+            
+            #encaminha para a tela certa baseado no perfil devolvido
+            perfil_nome = usuario.obter_perfil().lower()
+            if 'inquilino' in perfil_nome:
+                return redirect(url_for('painel_inquilino'))
+            elif 'proprietario' in perfil_nome or 'proprietário' in perfil_nome:
+                return redirect(url_for('painel_proprietario'))
+            elif 'imobiliaria' in perfil_nome or 'imobiliária' in perfil_nome:
+                return redirect(url_for('painel_imobiliaria'))
+            elif 'prestador' in perfil_nome or 'serviço' in perfil_nome or 'servico' in perfil_nome:
+                return redirect(url_for('painel_prestador'))
+        else:
+            return "Dados incorretos ou não encontrados."
+            
+    return render_template('login.html')
+
+@app.route('/painel_inquilino')
+def painel_inquilino():
+    return render_template('painel_inquilino.html')
+
+@app.route('/painel_proprietario')
+def painel_proprietario():
+    return render_template('painel_proprietario.html')
+
+@app.route('/painel_imobiliaria')
+def painel_imobiliaria():
+    return render_template('painel_imobiliaria.html')
+
+@app.route('/painel_prestador')
+def painel_prestador():
+    return render_template('painel_prestador.html')
+
+@app.route('/abrir_chamado', methods=['GET', 'POST'])
+def abrir_chamado():
+    if request.method == 'POST':
+        titulo = request.form.get('titulo')
+        descricao = request.form.get('descricao')
+        categoria = request.form.get('categoria')
         
-        return f"""
-            <h1>{perfil} cadastrado com sucesso!</h1>
-            <p>Acesse o sistema com o novo usuário: <b>{novo_usuario}</b></p><br>
-            <form action='/autenticar' method='POST'>
-                <input type='hidden' name='usuario' value='imobiliaria@gmail.com'>
-                <input type='hidden' name='senha' value='123'>
-                <button type='submit' style='padding: 10px; background-color: #555; color: white; border: none; border-radius: 5px; cursor: pointer;'>Voltar ao Painel da Imobiliária</button>
-            </form>
-        """
-    except Exception as e:
-        return f"<h1>Erro ao salvar usuário:</h1><p>{str(e)}</p><br><a href='/cadastro'>Tentar Novamente</a>"
-
-
-@app.route('/chamados')
-def tela_chamados():
-    return render_template('lista_chamados.html')
-
-
-@app.route('/abrir_chamado')
-def tela_abrir_chamado():
+        # Cria o chamado centralizado pela fachada
+        novo_chamado = SistemaImobiliarioFacade.abrir_novo_chamado(titulo, descricao, categoria)
+        chamados_banco_local[novo_chamado.id] = novo_chamado
+        return redirect(url_for('lista_chamados'))
+        
     return render_template('abrir_chamado.html')
 
+@app.route('/chamados')
+def lista_chamados():
+    return render_template('lista_chamados.html', chamados=chamados_banco_local.values())
 
-@app.route('/salvar_chamado', methods=['POST'])
-def salvar_chamado():
-    titulo_recebido = request.form.get('titulo')
-    categoria_recebida = request.form.get('categoria')
-    descricao_recebida = request.form.get('descricao')
-    
-    return """
-        <h1>Chamado registrado com sucesso!</h1>
-        <form action='/autenticar' method='POST'>
-            <input type='hidden' name='usuario' value='inquilino'>
-            <input type='hidden' name='senha' value='123'>
-            <button type='submit' style='padding: 10px; background-color: #555; color: white; border: none; border-radius: 5px; cursor: pointer;'>Voltar ao Painel</button>
-        </form>
-    """
-
-
-@app.route('/meus_chamados')
-def tela_meus_chamados():
-    return render_template('meus_chamados.html')
-
-
-@app.route('/chamados_estruturais')
-def tela_chamados_estruturais():
-    return render_template('chamados_estruturais.html')
-
-
-@app.route('/meus_servicos')
-def tela_meus_servicos():
-    return render_template('meus_servicos.html')
-
+@app.route('/atualizar_chamado/<chamado_id>')
+def atualizar_chamado(chamado_id):
+    chamado = chamados_banco_local.get(chamado_id)
+    if chamado:
+#avança o status do chamado seguindo o state
+        SistemaImobiliarioFacade.atualizar_andamento_chamado(chamado)
+    return redirect(url_for('lista_chamados'))
 
 if __name__ == '__main__':
     app.run(debug=True)
