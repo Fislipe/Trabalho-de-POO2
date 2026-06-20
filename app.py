@@ -4,8 +4,6 @@ from Classes.facade import SistemaImobiliarioFacade
 app = Flask(__name__)
 app.secret_key = '7b91e4f2c8a0d3b6f5e8a1c4b9d7e0f2'
 
-#listas locais para testar antes de ligar a base de dados definitiva
-usuarios_banco_local = {}
 chamados_banco_local = {}
 
 @app.route('/')
@@ -17,16 +15,15 @@ def cadastro():
     if request.method == 'POST':
         perfil = request.form.get('perfil')
         nome = request.form.get('nome')
-        documento = request.form.get('documento')
-        email = request.form.get('email')
+        
+        documento = request.form.get('novo_usuario') 
+        email = request.form.get('novo_usuario')
         senha = request.form.get('senha')
         
         try:
-            #chama a fachada para criar o tipo de utilizador correto usando a Factory
-            novo_usuario = SistemaImobiliarioFacade.registrar_novo_usuario(perfil, nome, documento, email, senha)
-            usuarios_banco_local[email] = novo_usuario
+            SistemaImobiliarioFacade.registrar_novo_usuario(perfil, nome, documento, email, senha)
             return redirect(url_for('login'))
-        except ValueError as e:
+        except Exception as e:
             return f"Erro ao registar: {str(e)}"
             
     return render_template('cadastro.html')
@@ -34,15 +31,15 @@ def cadastro():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form.get('email')
+        email = request.form.get('usuario')
         senha = request.form.get('senha')
         
-        usuario = usuarios_banco_local.get(email)
-        if usuario and usuario.validar_senha(senha):
+        usuario = SistemaImobiliarioFacade.autenticar_usuario(email, senha)
+        
+        if usuario:
             session['usuario_email'] = email
             session['usuario_perfil'] = usuario.obter_perfil()
             
-            #encaminha para a tela certa baseado no perfil devolvido
             perfil_nome = usuario.obter_perfil().lower()
             if 'inquilino' in perfil_nome:
                 return redirect(url_for('painel_inquilino'))
@@ -53,7 +50,7 @@ def login():
             elif 'prestador' in perfil_nome or 'serviço' in perfil_nome or 'servico' in perfil_nome:
                 return redirect(url_for('painel_prestador'))
         else:
-            return "Dados incorretos ou não encontrados."
+            return render_template('login.html', erro="Dados incorretos ou não encontrados.")
             
     return render_template('login.html')
 
@@ -80,7 +77,6 @@ def abrir_chamado():
         descricao = request.form.get('descricao')
         categoria = request.form.get('categoria')
         
-        # Cria o chamado centralizado pela fachada
         novo_chamado = SistemaImobiliarioFacade.abrir_novo_chamado(titulo, descricao, categoria)
         chamados_banco_local[novo_chamado.id] = novo_chamado
         return redirect(url_for('lista_chamados'))
@@ -95,9 +91,22 @@ def lista_chamados():
 def atualizar_chamado(chamado_id):
     chamado = chamados_banco_local.get(chamado_id)
     if chamado:
-#avança o status do chamado seguindo o state
         SistemaImobiliarioFacade.atualizar_andamento_chamado(chamado)
     return redirect(url_for('lista_chamados'))
+
+# --- NOVAS ROTAS ADICIONADAS AQUI ---
+
+@app.route('/meus_chamados')
+def meus_chamados():
+    return render_template('meus_chamados.html')
+
+@app.route('/chamados_estruturais')
+def chamados_estruturais():
+    return render_template('chamados_estruturais.html')
+
+@app.route('/meus_servicos')
+def meus_servicos():
+    return render_template('meus_servicos.html')
 
 if __name__ == '__main__':
     app.run(debug=True)
