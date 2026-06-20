@@ -46,11 +46,37 @@ class SistemaImobiliarioFacade:
         return None
 
     @staticmethod
-    def abrir_novo_chamado(titulo, descricao, categoria):
+    def abrir_novo_chamado(titulo, descricao, categoria, criado_por=None):
         novo_chamado = Chamado(titulo, descricao, categoria)
+
+        dados = {
+            "id": novo_chamado.id,
+            "titulo": novo_chamado.titulo,
+            "descricao": novo_chamado.descricao,
+            "categoria": novo_chamado.categoria,
+            "status": novo_chamado.get_status(),
+            "criado_por": criado_por
+        }
+        supabase.table("chamados").insert(dados).execute()
+        
         return novo_chamado
         
     @staticmethod
     def atualizar_andamento_chamado(chamado):
         chamado.avancar_status()
         return chamado.get_status()
+    
+    @staticmethod
+    def buscar_chamados_por_usuario(email):
+        resposta = supabase.table("chamados").select("*").eq("criado_por", email).execute()
+        return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+    
+    @staticmethod
+    def buscar_chamados_estruturais():
+        resposta = supabase.table("chamados").select("*").eq("categoria", "Estrutural").execute()
+        return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+    
+    @staticmethod
+    def buscar_chamados_imobiliaria():
+        resposta = supabase.table("chamados").select("*").eq("categoria", "Uso e Manutenção").execute()
+        return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])

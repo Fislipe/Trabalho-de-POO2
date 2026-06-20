@@ -18,7 +18,7 @@
         <h2>Relatar Problema no Imóvel</h2>
         <p style="color: gray; font-size: 14px;">Descreva o problema para que possamos acionar o responsável.</p>
         
-        <form action="/salvar_chamado" method="POST">
+        <form action="/abrir_chamado" method="POST">
             <input type="text" name="titulo" placeholder="Título (ex: Vazamento na pia)" required>
             
             <label for="categoria" style="font-size: 14px; margin-top: 10px; display: block;">Categoria (Define quem resolve!):</label>
@@ -32,8 +32,7 @@
             <button type="submit">Registrar Chamado</button>
         </form>
 
-        <form action="/autenticar" method="POST">
-            <input type="hidden" name="usuario" value="inquilino">
+        <form action="/painel_inquilino" method="GET">
             <button type="submit" class="btn-voltar">Cancelar</button>
         </form>
     </div>

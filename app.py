@@ -76,16 +76,17 @@ def abrir_chamado():
         titulo = request.form.get('titulo')
         descricao = request.form.get('descricao')
         categoria = request.form.get('categoria')
+        criado_por = session.get('usuario_email')
         
-        novo_chamado = SistemaImobiliarioFacade.abrir_novo_chamado(titulo, descricao, categoria)
-        chamados_banco_local[novo_chamado.id] = novo_chamado
-        return redirect(url_for('lista_chamados'))
+        SistemaImobiliarioFacade.abrir_novo_chamado(titulo, descricao, categoria, criado_por)
+        return redirect(url_for('meus_chamados'))
         
     return render_template('abrir_chamado.html')
 
 @app.route('/chamados')
 def lista_chamados():
-    return render_template('lista_chamados.html', chamados=chamados_banco_local.values())
+    chamados_agencia = SistemaImobiliarioFacade.buscar_chamados_imobiliaria()
+    return render_template('lista_chamados.html', chamados=chamados_agencia)
 
 @app.route('/atualizar_chamado/<chamado_id>')
 def atualizar_chamado(chamado_id):
@@ -94,19 +95,21 @@ def atualizar_chamado(chamado_id):
         SistemaImobiliarioFacade.atualizar_andamento_chamado(chamado)
     return redirect(url_for('lista_chamados'))
 
-# --- NOVAS ROTAS ADICIONADAS AQUI ---
-
 @app.route('/meus_chamados')
 def meus_chamados():
-    return render_template('meus_chamados.html')
+    email = session.get('usuario_email')
+    chamados_do_usuario = SistemaImobiliarioFacade.buscar_chamados_por_usuario(email)
+    return render_template('meus_chamados.html', chamados=chamados_do_usuario)
 
 @app.route('/chamados_estruturais')
 def chamados_estruturais():
-    return render_template('chamados_estruturais.html')
+    chamados_pendentes = SistemaImobiliarioFacade.buscar_chamados_estruturais()
+    return render_template('chamados_estruturais.html', chamados=chamados_pendentes)
 
 @app.route('/meus_servicos')
 def meus_servicos():
     return render_template('meus_servicos.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)

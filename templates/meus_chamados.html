@@ -19,14 +19,18 @@
         <h2>Histórico de Manutenções</h2>
         <p style="color: gray; font-size: 14px;">Acompanhe o status dos problemas relatados por você.</p>
         
+        {% for c in chamados %}
         <div class="card-chamado">
-            <h3>ID #2 - Maçaneta Quebrada</h3>
-            <p><strong>Data:</strong> 15/06/2026</p>
-            <p><strong>Status atual:</strong> <span class="status-badge">Em Execução pelo Prestador</span></p>
+            <h3>{{ c.titulo }}</h3>
+            <p><strong>Categoria:</strong> {{ c.categoria }}</p>
+            <p><strong>Descrição:</strong> {{ c.descricao }}</p>
+            <p><strong>Status atual:</strong> <span class="status-badge">{{ c.status }}</span></p>
         </div>
+        {% else %}
+        <p style="color: gray; text-align: center; margin-top: 20px;">Você ainda não abriu nenhum chamado.</p>
+        {% endfor %}
 
-        <form action="/autenticar" method="POST">
-            <input type="hidden" name="usuario" value="inquilino">
+        <form action="/painel_inquilino" method="GET">
             <button type="submit" class="btn-voltar">Voltar ao Painel</button>
         </form>
     </div>

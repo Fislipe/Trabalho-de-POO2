@@ -20,15 +20,19 @@
         <h2>Problemas Estruturais Pendentes</h2>
         <p style="color: gray; font-size: 14px;">Analise e aprove as solicitações de reparo do seu imóvel.</p>
         
+        {% for c in chamados %}
         <div class="card-chamado">
-            <h3>ID #1 - Infiltração na Parede da Sala</h3>
-            <p><strong>Custo Estimado:</strong> R$ 1.200,00</p>
-            <p><strong>Status:</strong> Aguardando sua aprovação</p>
+            <h3>{{ c.titulo }}</h3>
+            <p><strong>Descrição:</strong> {{ c.descricao }}</p>
+            <p><strong>Status:</strong> {{ c.status }}</p>
+            <p><strong>Reportado por:</strong> {{ c.criado_por }}</p>
             <button class="btn-aprovar">Aprovar Orçamento</button>
         </div>
+        {% else %}
+        <p style="color: gray; text-align: center; margin-top: 20px;">Não há problemas estruturais pendentes de aprovação.</p>
+        {% endfor %}
 
-        <form action="/autenticar" method="POST">
-            <input type="hidden" name="usuario" value="proprietario">
+        <form action="/painel_proprietario" method="GET">
             <button type="submit" class="btn-voltar">Voltar ao Painel</button>
         </form>
     </div>
