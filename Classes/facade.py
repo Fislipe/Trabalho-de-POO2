@@ -55,7 +55,9 @@ class SistemaImobiliarioFacade:
             "descricao": novo_chamado.descricao,
             "categoria": novo_chamado.categoria,
             "status": novo_chamado.get_status(),
-            "criado_por": criado_por
+            "responsavel": novo_chamado.responsavel,
+            "criado_por": criado_por,
+            "historico": novo_chamado.historico # CORRIGIDO: Salvando histórico inicial
         }
         supabase.table("chamados").insert(dados).execute()
         
@@ -64,7 +66,22 @@ class SistemaImobiliarioFacade:
     @staticmethod
     def atualizar_andamento_chamado(chamado):
         chamado.avancar_status()
+
+        # CORRIGIDO: Agora persiste a mudança de status e o histórico atualizado
+        supabase.table("chamados").update({
+            "status": chamado.get_status(),
+            "historico": chamado.historico
+        }).eq("id", chamado.id).execute()
+
         return chamado.get_status()
+
+    @staticmethod
+    def inquilino_confirmar_reparo(chamado):
+        """Novo método necessário para dar o gatilho da RN2 através da Facade"""
+        chamado.confirmar_reparo()
+        supabase.table("chamados").update({
+            "historico": chamado.historico
+        }).eq("id", chamado.id).execute()
     
     @staticmethod
     def buscar_chamados_por_usuario(email):
@@ -78,5 +95,28 @@ class SistemaImobiliarioFacade:
     
     @staticmethod
     def buscar_chamados_imobiliaria():
-        resposta = supabase.table("chamados").select("*").eq("categoria", "Uso e Manutenção").execute()
+        # CORRIGIDO: Busca baseada no responsável direcionado ("Imobiliária")
+        resposta = supabase.table("chamados").select("*").eq("responsavel", "Imobiliária").execute()
         return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+    
+    @staticmethod
+    def buscar_chamados_proprietario():
+        # CORRIGIDO: Ajustado para bater com a string com acento "Proprietário"
+        resposta = (
+            supabase
+            .table("chamados")
+            .select("*")
+            .eq("responsavel", "Proprietário")
+            .execute()
+        )
+        return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+    
+    @staticmethod
+    def atribuir_prestador(chamado, prestador):
+        chamado.atribuir_prestador(prestador)
+        chamado.adicionar_historico(f"Prestador {prestador.nome} atribuído.")
+        
+        # CORRIGIDO: Sincroniza o histórico de atribuição com o Supabase
+        supabase.table("chamados").update({
+            "historico": chamado.historico
+        }).eq("id", chamado.id).execute()

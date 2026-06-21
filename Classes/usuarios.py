@@ -1,8 +1,6 @@
-
 from abc import ABC, abstractmethod
 import uuid
 
-# Classes dos usuarios e a factory para criar eles
 class Usuario(ABC):
     def __init__(self, nome, email, senha, perfil):
         self.id = str(uuid.uuid4())
@@ -24,12 +22,12 @@ class Inquilino(Usuario):
 
 class Proprietario(Usuario):
     def __init__(self, nome, documento, email, senha):
-        super().__init__(nome, email, senha, "Proprietario")
+        super().__init__(nome, email, senha, "Proprietário")
         self.cpf_cnpj = documento
 
 class Imobiliaria(Usuario):
     def __init__(self, nome, documento, email, senha):
-        super().__init__(nome, email, senha, "Imobiliaria")
+        super().__init__(nome, email, senha, "Imobiliária")
         self.cnpj = documento
 
 class PrestadorServico(Usuario):
@@ -51,4 +49,4 @@ class UsuarioFactory:
         elif perfil_limpo in ["prestador de serviço", "prestador de servico", "prestador"]:
             return PrestadorServico(nome, documento, email, senha)
         else:
-            raise ValueError(f"Perfil '{perfil}' invalido.")
+            raise ValueError(f"Perfil '{perfil}' inválido.")
