@@ -12,6 +12,8 @@
         .status-badge { background-color: #2e8b57; padding: 5px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
         .btn-voltar { background-color: #555; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; width: 100%; margin-top: 10px; font-size: 16px; }
         .btn-voltar:hover { background-color: #333; }
+        .btn-confirmar { background-color: #2e8b57; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; display: inline-block; text-decoration: none; margin-top: 10px; font-size: 14px; font-weight: bold; text-align: center; }
+        .btn-confirmar:hover { background-color: #1f633d; }
     </style>
 </head>
 <body>
@@ -25,6 +27,10 @@
             <p><strong>Categoria:</strong> {{ c.categoria }}</p>
             <p><strong>Descrição:</strong> {{ c.descricao }}</p>
             <p><strong>Status atual:</strong> <span class="status-badge">{{ c.status }}</span></p>
+
+            {% if c.status == 'Resolvido' %}
+                <a href="/confirmar_reparo/{{ c.id }}" class="btn-confirmar">Confirmar que o Reparo foi Feito</a>
+            {% endif %}
         </div>
         {% else %}
         <p style="color: gray; text-align: center; margin-top: 20px;">Você ainda não abriu nenhum chamado.</p>

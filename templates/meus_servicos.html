@@ -20,15 +20,24 @@
         <h2>Ordem de Serviços Atribuídos</h2>
         <p style="color: gray; font-size: 14px;">Marque como concluído os serviços que você já finalizou.</p>
         
+        {% for c in chamados %}
         <div class="card-chamado">
-            <h3>ID #2 - Maçaneta Quebrada (Uso e Manutenção)</h3>
-            <p><strong>Endereço:</strong> Rua Principal, Apto 204</p>
-            <p><strong>Status:</strong> Em Execução</p>
-            <button class="btn-concluir">Marcar como Concluído</button>
+            <h3>{{ c.titulo }} ({{ c.categoria }})</h3>
+            <p><strong>Descrição:</strong> {{ c.descricao }}</p>
+            <p><strong>Status:</strong> {{ c.status }}</p>
+            <p><strong>Solicitado por:</strong> {{ c.criado_por }}</p>
+            
+            {% if c.status == 'Em Análise' %}
+                <a href="/avancar_chamado/{{ c.id }}" class="btn-concluir" style="text-decoration: none; display: inline-block; text-align: center; background-color: #ffc107;">Iniciar Serviço</a>
+            {% elif c.status == 'Em Execução' %}
+                <a href="/avancar_chamado/{{ c.id }}" class="btn-concluir" style="text-decoration: none; display: inline-block; text-align: center;">Marcar como Concluído</a>
+            {% endif %}
         </div>
+        {% else %}
+        <p style="color: gray; text-align: center; margin-top: 20px;">Nenhuma ordem de serviço atribuída no momento.</p>
+        {% endfor %}
 
-        <form action="/autenticar" method="POST">
-            <input type="hidden" name="usuario" value="prestador">
+        <form action="/painel_prestador" method="GET">
             <button type="submit" class="btn-voltar">Voltar ao Painel</button>
         </form>
     </div>

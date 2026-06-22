@@ -26,7 +26,8 @@
             <p><strong>Descrição:</strong> {{ c.descricao }}</p>
             <p><strong>Status:</strong> {{ c.status }}</p>
             <p><strong>Aberto por:</strong> {{ c.criado_por }}</p>
-            <button class="btn-acao">Atribuir a Prestador</button>
+            
+            <a href="/escolher_prestador/{{ c.id }}" class="btn-acao" style="text-decoration: none; display: inline-block; text-align: center;">Atribuir a Prestador</a>
         </div>
         {% else %}
         <p style="color: gray; text-align: center; margin-top: 20px;">Nenhum chamado de manutenção registrado no momento.</p>

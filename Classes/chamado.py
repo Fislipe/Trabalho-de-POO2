@@ -11,6 +11,7 @@ class EstadoChamado(ABC):
     def __str__(self):
         pass
 
+# RE ADICIONADO: Estado inicial do ciclo de vida
 class EstadoAberto(EstadoChamado):
     def proximo_estado(self, chamado):
         chamado.estado = EstadoEmAnalise()
@@ -36,7 +37,7 @@ class EstadoResolvido(EstadoChamado):
         chamado.estado = EstadoEncerrado()
         chamado.adicionar_historico("Status alterado para: Encerrado")
         
-    def __str__(self): return "Resolvido" # CORRIGIDO: Faltava este método!
+    def __str__(self): return "Resolvido"
 
 class EstadoEncerrado(EstadoChamado):
     def proximo_estado(self, chamado):
@@ -51,8 +52,7 @@ class Chamado:
         self.descricao = descricao
         self.categoria = categoria
         self.confirmado_pelo_inquilino = False
-        
-        # CORRIGIDO: Modificado de "P"/"I" para os nomes reais salvos nas buscas
+
         if categoria.strip().lower() == "estrutural":
             self.responsavel = "Proprietário"
         else:
@@ -83,3 +83,10 @@ class Chamado:
     
     def atribuir_prestador(self, prestador):
         self.prestador = prestador
+
+    def definir_estado(self, status_atual):
+        if status_atual == "Aberto": self.estado = EstadoAberto()
+        elif status_atual == "Em Análise": self.estado = EstadoEmAnalise()
+        elif status_atual == "Em Execução": self.estado = EstadoEmExecucao()
+        elif status_atual == "Resolvido": self.estado = EstadoResolvido()
+        elif status_atual == "Encerrado": self.estado = EstadoEncerrado()

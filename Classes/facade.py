@@ -1,6 +1,7 @@
 from Classes.usuarios import UsuarioFactory
 from Classes.chamado import Chamado
 from supabase import create_client, Client
+from datetime import datetime
 
 SUPABASE_URL = "https://aawotiynbpxgykxzlyux.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFhd290aXluYnB4Z3lreHpseXV4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2NDAzMzAsImV4cCI6MjA5NzIxNjMzMH0.ntk2VmlVvUHphWyZCMXx1_Ng5jaVPCuy0yUQmvwpshY"
@@ -16,7 +17,8 @@ class SistemaImobiliarioFacade:
                 "nome": nome,
                 "email": email,
                 "senha": senha,
-                "perfil": novo_usuario.obter_perfil()
+                "perfil": novo_usuario.obter_perfil(),
+                "documento": documento
             }
             supabase.table("usuarios").insert(dados).execute()
             
@@ -27,7 +29,7 @@ class SistemaImobiliarioFacade:
     @staticmethod
     def autenticar_usuario(email, senha_digitada):
         resposta = supabase.table("usuarios").select("*").eq("email", email).execute()
-        usuarios_encontrados = resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+        usuarios_encontrados = resposta.data if hasattr(resposta, 'data') else resposta.get('data', []) 
         
         if usuarios_encontrados:
             dados_db = usuarios_encontrados[0]
@@ -35,7 +37,7 @@ class SistemaImobiliarioFacade:
             usuario_obj = UsuarioFactory.criar_usuario(
                 perfil=dados_db['perfil'],
                 nome=dados_db['nome'],
-                documento=dados_db['email'],
+                documento=dados_db.get('documento', dados_db['email']),
                 email=dados_db['email'],
                 senha=dados_db['senha']
             )
@@ -56,32 +58,47 @@ class SistemaImobiliarioFacade:
             "categoria": novo_chamado.categoria,
             "status": novo_chamado.get_status(),
             "responsavel": novo_chamado.responsavel,
-            "criado_por": criado_por,
-            "historico": novo_chamado.historico # CORRIGIDO: Salvando histórico inicial
+            "criado_por": criado_por
         }
         supabase.table("chamados").insert(dados).execute()
+        
+        supabase.table("historico_chamados").insert({
+            "chamado_id": novo_chamado.id,
+            "mensagem": novo_chamado.historico[-1],
+            "data_hora": datetime.now().isoformat()
+        }).execute()
         
         return novo_chamado
         
     @staticmethod
-    def atualizar_andamento_chamado(chamado):
+    def atualizar_andamento_chamado(chamado, prestador_email=None):
         chamado.avancar_status()
 
-        # CORRIGIDO: Agora persiste a mudança de status e o histórico atualizado
-        supabase.table("chamados").update({
-            "status": chamado.get_status(),
-            "historico": chamado.historico
-        }).eq("id", chamado.id).execute()
+        dados_update = {
+            "status": chamado.get_status()
+        }
+        if prestador_email:
+            dados_update["prestador"] = prestador_email
+
+        supabase.table("chamados").update(dados_update).eq("id", chamado.id).execute()
+
+        supabase.table("historico_chamados").insert({
+            "chamado_id": chamado.id,
+            "mensagem": chamado.historico[-1],
+            "data_hora": datetime.now().isoformat()
+        }).execute()
 
         return chamado.get_status()
 
     @staticmethod
     def inquilino_confirmar_reparo(chamado):
-        """Novo método necessário para dar o gatilho da RN2 através da Facade"""
         chamado.confirmar_reparo()
-        supabase.table("chamados").update({
-            "historico": chamado.historico
-        }).eq("id", chamado.id).execute()
+        
+        supabase.table("historico_chamados").insert({
+            "chamado_id": chamado.id,
+            "mensagem": chamado.historico[-1],
+            "data_hora": datetime.now().isoformat()
+        }).execute()
     
     @staticmethod
     def buscar_chamados_por_usuario(email):
@@ -90,33 +107,60 @@ class SistemaImobiliarioFacade:
     
     @staticmethod
     def buscar_chamados_estruturais():
-        resposta = supabase.table("chamados").select("*").eq("categoria", "Estrutural").execute()
+        resposta = supabase.table("chamados").select("*").eq("categoria", "Estrutural").eq("status", "Aberto").execute()
         return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
     
     @staticmethod
     def buscar_chamados_imobiliaria():
-        # CORRIGIDO: Busca baseada no responsável direcionado ("Imobiliária")
-        resposta = supabase.table("chamados").select("*").eq("responsavel", "Imobiliária").execute()
+        resposta = supabase.table("chamados").select("*").eq("responsavel", "Imobiliária").eq("status", "Aberto").execute()
         return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
     
     @staticmethod
-    def buscar_chamados_proprietario():
-        # CORRIGIDO: Ajustado para bater com a string com acento "Proprietário"
-        resposta = (
-            supabase
-            .table("chamados")
-            .select("*")
-            .eq("responsavel", "Proprietário")
-            .execute()
-        )
-        return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
-    
-    @staticmethod
-    def atribuir_prestador(chamado, prestador):
-        chamado.atribuir_prestador(prestador)
-        chamado.adicionar_historico(f"Prestador {prestador.nome} atribuído.")
+    def buscar_chamado_por_id(chamado_id):
+        resposta = supabase.table("chamados").select("*").eq("id", Military_id:=chamado_id).execute()
+        if not hasattr(resposta, 'data') or not resposta.data:
+            return None
+            
+        dados = resposta.data[0]
+        chamado = Chamado(dados['titulo'], dados['descricao'], dados['categoria'])
+        chamado.id = dados['id']
+        chamado.responsavel = dados['responsavel']
         
-        # CORRIGIDO: Sincroniza o histórico de atribuição com o Supabase
-        supabase.table("chamados").update({
-            "historico": chamado.historico
-        }).eq("id", chamado.id).execute()
+        # CORRIGIDO: Chame o método dinâmico que você criou no chamado.py
+        chamado.definir_estado(dados['status'])
+        
+        resp_hist = supabase.table("historico_chamados").select("mensagem").eq("chamado_id", chamado_id).order("data_hora").execute()
+        if hasattr(resp_hist, 'data') and resp_hist.data:
+            chamado.historico = [h['mensagem'] for h in resp_hist.data]
+            
+        return chamado
+
+    @staticmethod
+    def buscar_todos_prestadores():
+        resposta = supabase.table("usuarios").select("*").execute()
+        usuarios = resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+        
+        prestadores = []
+        for u in usuarios:
+            p_lower = u.get('perfil', '').lower()
+            if 'prestador' in p_lower or 'serviço' in p_lower or 'servico' in p_lower:
+                prestadores.append(u)
+        return prestadores
+
+    @staticmethod
+    def buscar_chamados_prestador(email):
+        resposta = supabase.table("chamados").select("*").eq("prestador", email).in_("status", ["Em Análise", "Em Execução"]).execute()
+        return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
+
+    @staticmethod
+    def atribuir_chamado_a_prestador(chamado, prestador_email):
+        msg = f"Imobiliária atribuiu o serviço ao prestador: {prestador_email}"
+        chamado.adicionar_historico(msg)
+        
+        supabase.table("historico_chamados").insert({
+            "chamado_id": chamado.id,
+            "mensagem": msg,
+            "data_hora": datetime.now().isoformat()
+        }).execute()
+        
+        SistemaImobiliarioFacade.atualizar_andamento_chamado(chamado, prestador_email=prestador_email)

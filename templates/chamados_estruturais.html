@@ -26,7 +26,8 @@
             <p><strong>Descrição:</strong> {{ c.descricao }}</p>
             <p><strong>Status:</strong> {{ c.status }}</p>
             <p><strong>Reportado por:</strong> {{ c.criado_por }}</p>
-            <button class="btn-aprovar">Aprovar Orçamento</button>
+            
+            <a href="/avancar_chamado/{{ c.id }}" class="btn-aprovar" style="text-decoration: none; display: inline-block; text-align: center;">Aprovar Orçamento</a>
         </div>
         {% else %}
         <p style="color: gray; text-align: center; margin-top: 20px;">Não há problemas estruturais pendentes de aprovação.</p>
