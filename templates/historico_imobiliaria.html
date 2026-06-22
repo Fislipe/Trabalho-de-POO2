@@ -42,9 +42,9 @@
                         <strong>{{ c.titulo }}</strong>
                         <span class="text-small">{{ c.categoria }}</span>
                         
-                        <span class="text-small" style="color: #888; margin-top: 4px;">📅 Aberto em: {{ c.data_abertura or 'Não registrado' }}</span>
+                        <span class="text-small" style="color: #888; margin-top: 4px;">Aberto em: {{ c.data_abertura or 'Não registrado' }}</span>
                         {% if c.data_recording or c.data_encerramento %}
-                            <span class="text-small" style="color: #2e8b57; font-weight: bold;">🏁 Encerrado em: {{ c.data_encerramento }}</span>
+                            <span class="text-small" style="color: #2e8b57; font-weight: bold;">Encerrado em: {{ c.data_encerramento }}</span>
                         {% endif %}
                     </td>
                     <td>
