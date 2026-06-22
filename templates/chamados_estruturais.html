@@ -18,7 +18,7 @@
 <body>
     <div class="container">
         <h2>Problemas Estruturais Pendentes</h2>
-        <p style="color: gray; font-size: 14px;">Analise e aprove as solicitações de reparo do seu imóvel.</p>
+        <p style="color: gray; font-size: 14px;">Analise e aprove as solicitações de tempo do seu imóvel.</p>
         
         {% for c in chamados %}
         <div class="card-chamado">
@@ -27,7 +27,7 @@
             <p><strong>Status:</strong> {{ c.status }}</p>
             <p><strong>Reportado por:</strong> {{ c.criado_por }}</p>
             
-            <a href="/avancar_chamado/{{ c.id }}" class="btn-aprovar" style="text-decoration: none; display: inline-block; text-align: center;">Aprovar Orçamento</a>
+            <a href="/aprovar_orcamento/{{ c.id }}" class="btn-aprovar" style="text-decoration: none; display: inline-block; text-align: center;">Aprovar Orçamento</a>
         </div>
         {% else %}
         <p style="color: gray; text-align: center; margin-top: 20px;">Não há problemas estruturais pendentes de aprovação.</p>

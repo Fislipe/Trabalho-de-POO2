@@ -101,17 +101,22 @@ def escolher_prestador(chamado_id):
     prestadores = SistemaImobiliarioFacade.buscar_todos_prestadores()
     return render_template('escolher_prestador.html', chamado=chamado, prestadores=prestadores)
 
+# --- NOVA ROTA DO PROPRIETÁRIO ADICIONADA ---
+@app.route('/aprovar_orcamento/<chamado_id>')
+def aprovar_orcamento(chamado_id):
+    chamado = SistemaImobiliarioFacade.buscar_chamado_por_id(chamado_id)
+    if chamado:
+        # Aciona o novo método com o nome atualizado que você definiu na fachada
+        SistemaImobiliarioFacade.aprovar_orcamento(chamado)
+    return redirect(url_for('chamados_estruturais'))
+
+# --- ROTA DO PRESTADOR SIMPLIFICADA ---
 @app.route('/avancar_chamado/<chamado_id>')
 def avancar_chamado(chamado_id):
     chamado = SistemaImobiliarioFacade.buscar_chamado_por_id(chamado_id)
     if chamado:
         SistemaImobiliarioFacade.atualizar_andamento_chamado(chamado)
-    
-    perfil = session.get('usuario_perfil', '').lower()
-    if 'proprietario' in perfil or 'proprietário' in perfil:
-        return redirect(url_for('chamados_estruturais'))
-    else:
-        return redirect(url_for('meus_servicos'))
+    return redirect(url_for('meus_servicos'))
 
 @app.route('/confirmar_reparo/<chamado_id>')
 def confirmar_reparo(chamado_id):
@@ -138,6 +143,12 @@ def meus_servicos():
     email = session.get('usuario_email')
     servicos_atribuidos = SistemaImobiliarioFacade.buscar_chamados_prestador(email)
     return render_template('meus_servicos.html', chamados=servicos_atribuidos)
+
+@app.route('/historico_imobiliaria')
+def historico_imobiliaria():
+    # Puxa o histórico completo de chamados para a imobiliaria
+    lista_historico = SistemaImobiliarioFacade.buscar_historico_completo()
+    return render_template('historico_imobiliaria.html', chamados=lista_historico)
 
 if __name__ == '__main__':
     app.run(debug=True)

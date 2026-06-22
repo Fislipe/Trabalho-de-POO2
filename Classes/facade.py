@@ -51,6 +51,7 @@ class SistemaImobiliarioFacade:
     def abrir_novo_chamado(titulo, descricao, categoria, criado_por=None):
         novo_chamado = Chamado(titulo, descricao, categoria)
 
+        # Agora grava também a data de abertura formatada no momento do insert
         dados = {
             "id": novo_chamado.id,
             "titulo": novo_chamado.titulo,
@@ -58,7 +59,8 @@ class SistemaImobiliarioFacade:
             "categoria": novo_chamado.categoria,
             "status": novo_chamado.get_status(),
             "responsavel": novo_chamado.responsavel,
-            "criado_por": criado_por
+            "criado_por": criado_por,
+            "data_abertura": datetime.now().strftime('%d/%m/%Y %H:%M')
         }
         supabase.table("chamados").insert(dados).execute()
         
@@ -79,6 +81,9 @@ class SistemaImobiliarioFacade:
         }
         if prestador_email:
             dados_update["prestador"] = prestador_email
+
+        if chamado.get_status() == "Encerrado":
+            dados_update["data_encerramento"] = datetime.now().strftime('%d/%m/%Y %H:%M')
 
         supabase.table("chamados").update(dados_update).eq("id", chamado.id).execute()
 
@@ -107,7 +112,8 @@ class SistemaImobiliarioFacade:
     
     @staticmethod
     def buscar_chamados_estruturais():
-        resposta = supabase.table("chamados").select("*").eq("categoria", "Estrutural").eq("status", "Aberto").execute()
+        # MODIFICADO: O proprietário só vê o que é estrutural E está sob a responsabilidade dele atualmente
+        resposta = supabase.table("chamados").select("*").eq("categoria", "Estrutural").eq("responsavel", "Proprietário").eq("status", "Aberto").execute()
         return resposta.data if hasattr(resposta, 'data') else resposta.get('data', [])
     
     @staticmethod
@@ -117,7 +123,7 @@ class SistemaImobiliarioFacade:
     
     @staticmethod
     def buscar_chamado_por_id(chamado_id):
-        resposta = supabase.table("chamados").select("*").eq("id", Military_id:=chamado_id).execute()
+        resposta = supabase.table("chamados").select("*").eq("id", chamado_id).execute()
         if not hasattr(resposta, 'data') or not resposta.data:
             return None
             
@@ -126,7 +132,6 @@ class SistemaImobiliarioFacade:
         chamado.id = dados['id']
         chamado.responsavel = dados['responsavel']
         
-        # CORRIGIDO: Chame o método dinâmico que você criou no chamado.py
         chamado.definir_estado(dados['status'])
         
         resp_hist = supabase.table("historico_chamados").select("mensagem").eq("chamado_id", chamado_id).order("data_hora").execute()
@@ -164,3 +169,43 @@ class SistemaImobiliarioFacade:
         }).execute()
         
         SistemaImobiliarioFacade.atualizar_andamento_chamado(chamado, prestador_email=prestador_email)
+
+    @staticmethod
+    def aprovar_orcamento(chamado):
+        # repassa o trabalho pra imobiliaria
+        chamado.responsavel = "Imobiliária"
+        msg = "Proprietário aprovou o orçamento. Chamado retornado para a Imobiliária selecionar o prestador."
+        chamado.adicionar_historico(msg)
+        
+        # att a responsabilidade no banco de dados
+        supabase.table("chamados").update({
+            "responsavel": "Imobiliária"
+        }).eq("id", chamado.id).execute()
+        
+        supabase.table("historico_chamados").insert({
+            "chamado_id": chamado.id,
+            "mensagem": msg,
+            "data_hora": datetime.now().isoformat()
+        }).execute()
+
+    @staticmethod
+    def buscar_historico_completo():
+        resp_chamados = supabase.table("chamados").select("*").execute()
+        chamados = resp_chamados.data if hasattr(resp_chamados, 'data') else resp_chamados.get('data', [])
+
+        resp_usuarios = supabase.table("usuarios").select("email", "nome").execute()
+        usuarios = resp_usuarios.data if hasattr(resp_usuarios, 'data') else resp_usuarios.get('data', [])
+        
+        mapa_nomes = {u['email']: u['nome'] for u in usuarios}
+
+        for c in chamados:
+            email_criador = c.get('criado_por')
+            email_prestador = c.get('prestador')
+            
+            c['nome_criador'] = mapa_nomes.get(email_criador, "Usuário Externo")
+            c['nome_prestador'] = mapa_nomes.get(email_prestador, "Ainda não atribuído")
+            
+            if c['status'] in ['Em Análise', 'Em Execução', 'Resolvido', 'Encerrado'] and not email_prestador:
+                c['nome_prestador'] = "Prestador Geral"
+
+        return chamados

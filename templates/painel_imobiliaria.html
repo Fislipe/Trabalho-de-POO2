@@ -11,6 +11,8 @@
         .form-sair { text-align: right; margin-top: 20px; }
         .sair { background-color: #8d1f1f; width: auto; padding: 10px 20px; margin: 0; display: inline-block; }
         .sair:hover { background-color: #631414; }
+        /* Classe opcional para o efeito de hover no botão de histórico customizado */
+        .btn-historico:hover { background-color: #3b3b3b !important; }
     </style>
 </head>
 <body>
@@ -24,6 +26,12 @@
         
         <form action="/chamados" method="GET">
             <button type="submit">Ver Chamados</button>
+        </form>
+        
+        <form action="/historico_imobiliaria" method="GET">
+            <button type="submit" class="btn-historico" style="background-color: #2b2b2b; color: white; border: 1px solid #1f538d;">
+                Visualizar Histórico de Chamados
+            </button>
         </form>
         
         <form action="/" method="GET" class="form-sair">
